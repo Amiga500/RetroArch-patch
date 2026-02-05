@@ -43,11 +43,11 @@ static void show_miyoo_fullscreen_notification(settings_t *settings) {
       struct fb_var_screeninfo vinfo;
       if (ioctl(fb, FBIOGET_VSCREENINFO, &vinfo)) {
         RARCH_ERR("Error reading variable information");
-        close(fb);
       } else {
         res_x = vinfo.xres;
         res_y = vinfo.yres;
       }
+      close(fb);
     }
   }
 
@@ -167,6 +167,9 @@ static bool write_core_override_aspect_scale(settings_t *settings) {
   // Use existing override file, if exists, or create new config file
   if (!(conf = config_file_new_from_path_to_string(override_path)))
     conf = config_file_new_alloc();
+
+  if (!conf)
+    return false;
 
   // Set the two overrides - leave everything else as-is
   config_set_string(conf, "video_dingux_ipu_keep_aspect",

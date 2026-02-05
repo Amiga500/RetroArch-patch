@@ -485,7 +485,13 @@ static FILE *__get_cpuclock_file(void)
 static void set_cpuclock(int clock) {
 	sync();
 	int fd_mem = open("/dev/mem", O_RDWR);
+	if (fd_mem < 0) return;
+
 	void* pll_map = mmap(0, PLL_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd_mem, BASE_REG_MPLL_PA);
+	if (pll_map == MAP_FAILED) {
+		close(fd_mem);
+		return;
+	}
 
 	uint32_t post_div;
 	if (clock >= 800000) post_div = 2;

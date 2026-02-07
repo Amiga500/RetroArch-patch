@@ -91,11 +91,11 @@ void miyoomini_rumble(uint16_t strength) {
    value[0] = (strength == 0 ? 0x31 : 0x30);
    if (lastvalue != value[0]) {
       fd = open("/sys/class/gpio/export", O_WRONLY);
-      if (fd > 0) { write(fd, str_export, 2); close(fd); }
+      if (fd >= 0) { write(fd, str_export, 2); close(fd); }
       fd = open("/sys/class/gpio/gpio48/direction", O_WRONLY);
-      if (fd > 0) { write(fd, str_direction, 3); close(fd); }
+      if (fd >= 0) { write(fd, str_direction, 3); close(fd); }
       fd = open("/sys/class/gpio/gpio48/value", O_WRONLY);
-      if (fd > 0) { write(fd, value, 1); close(fd); }
+      if (fd >= 0) { write(fd, value, 1); close(fd); }
       lastvalue = value[0];
    }
 }

@@ -124,8 +124,7 @@ static void *oss_init(const char *device,
 
 error:
    close(ossaudio->fd);
-   if (ossaudio)
-      free(ossaudio);
+   free(ossaudio);
    perror("ioctl");
    return NULL;
 }

@@ -958,13 +958,14 @@ static bool sdl_miyoomini_gfx_frame(void *data, const void *frame,
       /* HW Blit GFX surface to Framebuffer and Flip */
       GFX_UpdateRect(vid->screen, vid->video_x, vid->video_y, vid->video_w, vid->video_h);
    } else {
-      if (!vid->was_in_menu) {
+         /* The menu is always drawn unrotated (180 = panel native orientation),
+          * regardless of the rotation requested by the core */
          vid->was_in_menu = true;
          stOpt.eRotate = E_MI_GFX_ROTATE_180;
-      }
-      SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, rgui_menu_stretch ? NULL : &rgui_menu_dest_rect);
-      GFX_Flip(vid->menuscreen);
+         SDL_SoftStretch(vid->menuscreen_rgui, NULL, vid->menuscreen, rgui_menu_stretch ? NULL : &rgui_menu_dest_rect);
+         GFX_Flip(vid->menuscreen);
    }
+
    return true;
 }
 
@@ -1040,19 +1041,20 @@ static bool sdl_miyoomini_gfx_has_windowed(void *data) { return false; }
 
 static void sdl_miyoomini_gfx_set_rotation(void *data, unsigned rotation) {
    sdl_miyoomini_video_t *vid = (sdl_miyoomini_video_t*)data;
+   MI_GFX_Rotate_e new_rotate;
    if (unlikely(!vid)) return;
    switch (rotation) {
-      case 1:
-         stOpt.eRotate = E_MI_GFX_ROTATE_90; break;
-      case 2:
-         stOpt.eRotate = E_MI_GFX_ROTATE_0; break;
-      case 3:
-         stOpt.eRotate = E_MI_GFX_ROTATE_270; break;
-      default:
-         stOpt.eRotate = E_MI_GFX_ROTATE_180; break;
+      case 1:  new_rotate = E_MI_GFX_ROTATE_90;  break;
+      case 2:  new_rotate = E_MI_GFX_ROTATE_0;   break;
+      case 3:  new_rotate = E_MI_GFX_ROTATE_270; break;
+      default: new_rotate = E_MI_GFX_ROTATE_180; break;
    }
-   if (vid->rotate != stOpt.eRotate) {
-      vid->rotate = stOpt.eRotate;
+   /* While the menu is active, only store the rotation:
+    * it is applied when leaving the menu (see gfx_frame) */
+   if (!vid->menu_active)
+      stOpt.eRotate = new_rotate;
+   if (vid->rotate != new_rotate) {
+      vid->rotate = new_rotate;
       sdl_miyoomini_set_output(vid, vid->content_width, vid->content_height, vid->rgb32);
    }
 }

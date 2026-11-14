@@ -1,0 +1,39 @@
+--- a/tasks/task_powerstate.c
++++ b/tasks/task_powerstate.c
+@@ -22,6 +22,10 @@
+ #include "../../frontend/frontend_driver.h"
+ #include "tasks_internal.h"
+ 
++#ifdef HAVE_MENU
++#include "../gfx/gfx_animation.h"
++#endif
++
+ typedef struct powerstate powerstate_t;
+ 
+ struct powerstate
+@@ -47,11 +51,25 @@
+       void *user_data, const char *error)
+ {
+    powerstate_t *powerstate = (powerstate_t*)task_data;
++#ifdef HAVE_MENU
++   bool changed = (powerstate_percent != powerstate->percent)
++         || (powerstate_status != powerstate->state);
++#endif
+ 
+    powerstate_percent = powerstate->percent;
+    powerstate_status  = powerstate->state;
+ 
+    free(powerstate);
++
++#ifdef HAVE_MENU
++   /* The menu asks for a new reading and draws the previous one at once
++    * (menu_display_powerstate). RGUI only draws again when something
++    * changes, so a new value stayed hidden until a button was pressed:
++    * opening the Quick Menu showed the battery level of the last time it
++    * was open. Ask for a redraw when the reading changed. */
++   if (changed)
++      GFX_ANIMATION_SET_ACTIVE(anim_get_ptr());
++#endif
+ }
+ 
+ static void task_powerstate_handler(retro_task_t *task)
